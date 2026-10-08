@@ -1,6 +1,6 @@
 name: 构建车机APK
 
-# 强制兼容模式，忽略 Node 版本警告
+# 强制兼容模式
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE20: false
 
@@ -13,11 +13,9 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      # 1. 拉取代码 (明确拉取所有文件，包括隐藏文件和子目录)
+      # 1. 拉取代码
       - name: 1. 获取源码
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # 确保能获取到所有历史文件
 
       # 2. 设置 JDK 11
       - name: 2. 设置 Java 11
@@ -26,36 +24,20 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
 
-      # 3. 查找并执行编译
-      - name: 3. 动态查找 gradlew 并编译
+      # 3. 编译 (直接调用 bash，避免权限问题)
+      - name: 3. 开始编译
         run: |
-          echo "--- 正在查找 gradlew 文件 ---"
-          
-          # 尝试在根目录和 app 目录下找 gradlew
-          if [ -f "gradlew" ]; then
-            GRADLEW_PATH="gradlew"
-            echo "✅ 在根目录找到 gradlew"
-          elif [ -f "app/gradlew" ]; then
-            GRADLEW_PATH="app/gradlew"
-            echo "✅ 在 app 目录找到 gradlew"
-          else
-            echo "❌ 错误：找不到 gradlew 文件！"
-            echo "当前目录下的文件列表："
-            ls -la
-            exit 1
-          fi
-
-          # 赋予执行权限
-          chmod +x $GRADLEW_PATH
-          
-          # 执行编译
           echo "--- 开始执行编译 ---"
-          ./$GRADLEW_PATH assembleDebug
+          
+          # 修复换行符
+          sed -i 's/\r$//' gradlew
+          
+          # 直接通过 bash 运行，不需要 chmod +x
+          bash gradlew assembleDebug
 
       # 4. 上传 APK
       - name: 4. 上传 APK
         uses: actions/upload-artifact@v4
         with:
           name: CarLife-YunOS-安装包
-          # 尝试匹配可能的输出路径
           path: app/build/outputs/apk/debug/*.apk
