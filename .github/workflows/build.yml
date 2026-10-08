@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      # 1. 拉取代码 (关键修改：fetch-depth: 0 强制拉取所有文件，包括隐藏的 gradlew)
+      # 1. 拉取代码 (强制全量下载，包括隐藏文件)
       - name: 1. 获取源码
         uses: actions/checkout@v4
         with:
@@ -26,23 +26,25 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
 
-      # 3. 智能编译
+      # 3. 智能编译 (Windows 脚本 + 路径调试)
       - name: 3. 开始编译
         run: |
-          echo "--- 开始寻找构建脚本 ---"
+          echo "=== 开始调试 ==="
           
-          # 判断是 Windows 还是 Linux 环境
-          if [ -f "gradlew" ]; then
-            echo "✅ 发现 Linux 脚本 (gradlew)"
-            bash gradlew assembleDebug
-          elif [ -f "gradlew.bat" ]; then
+          # 强制切换到项目根目录 (CarLifeLauncherYunOS)
+          cd CarLifeLauncherYunOS || { echo "❌ 无法进入项目目录！"; exit 1; }
+          
+          echo "✅ 当前工作目录：$(pwd)"
+          echo "📂 当前目录内容："
+          ls -la
+          
+          # 检查 gradlew.bat 是否存在
+          if [ -f "gradlew.bat" ]; then
             echo "✅ 发现 Windows 脚本 (gradlew.bat)"
             chmod +x gradlew.bat
             ./gradlew.bat assembleDebug
           else
-            echo "❌ 严重错误：既找不到 gradlew 也找不到 gradlew.bat！"
-            echo "当前目录内容："
-            ls -la
+            echo "❌ 严重错误：连 gradlew.bat 也找不到！"
             exit 1
           fi
 
@@ -51,4 +53,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: CarLife-YunOS-安装包
-          path: app/build/outputs/apk/debug/*.apk
+          path: CarLifeLauncherYunOS/app/build/outputs/apk/debug/*.apk
