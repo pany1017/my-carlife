@@ -1,9 +1,5 @@
 name: 构建车机APK
 
-# 强制兼容模式
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE20: false
-
 on:
   push:
     branches: [ main ]
@@ -13,11 +9,9 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      # 1. 拉取代码 (强制全量下载，包括隐藏文件)
+      # 1. 拉取代码
       - name: 1. 获取源码
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 
 
       # 2. 设置 JDK 11
       - name: 2. 设置 Java 11
@@ -26,27 +20,22 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
 
-      # 3. 智能编译 (Windows 脚本 + 路径调试)
-      - name: 3. 开始编译
+      # 3. 强制编译（终极版）
+      - name: 3. 强制编译
         run: |
-          echo "=== 开始调试 ==="
+          echo "=== 开始终极修复 ==="
           
-          # 强制切换到项目根目录 (CarLifeLauncherYunOS)
-          cd CarLifeLauncherYunOS || { echo "❌ 无法进入项目目录！"; exit 1; }
+          # 1. 强制切换到项目根目录
+          cd CarLifeLauncherYunOS || exit 1
           
-          echo "✅ 当前工作目录：$(pwd)"
-          echo "📂 当前目录内容："
-          ls -la
+          # 2. 暴力修复换行符（针对 Windows 上传的文件）
+          sed -i 's/\r$//' gradlew
           
-          # 检查 gradlew.bat 是否存在
-          if [ -f "gradlew.bat" ]; then
-            echo "✅ 发现 Windows 脚本 (gradlew.bat)"
-            chmod +x gradlew.bat
-            ./gradlew.bat assembleDebug
-          else
-            echo "❌ 严重错误：连 gradlew.bat 也找不到！"
-            exit 1
-          fi
+          # 3. 强行赋予所有权限
+          chmod +x gradlew
+          
+          # 4. 直接执行构建
+          ./gradlew assembleDebug --stacktrace
 
       # 4. 上传 APK
       - name: 4. 上传 APK
