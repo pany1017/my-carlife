@@ -1,6 +1,8 @@
-name: Build APK
+name: 构建车机APK
 
-# 👇 删除之前那个强制 Node 20 的变量，既然系统强制升级，我们就顺应它
+# 👇 核心修复1：强制云端电脑用旧版 Node 环境，避开 GitHub 的最新拦截
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE20: false
 
 on:
   push:
@@ -8,31 +10,36 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # 👇 核心修复2：指定用 Ubuntu 22.04，这是目前最稳的车机编译环境
+    runs-on: ubuntu-22.04
 
     steps:
-      # 1. 拉取代码 (升级到 v4)
-      - name: Checkout code
+      # 1. 拉取代码
+      - name: 1. 获取源码
         uses: actions/checkout@v4
 
-      # 2. 设置 JDK (升级到 v4)
-      - name: Set up JDK 11
+      # 2. 设置 JDK 11
+      - name: 2. 设置 Java 11
         uses: actions/setup-java@v4
         with:
           java-version: '11'
           distribution: 'temurin'
 
       # 3. 赋予权限并编译
-      - name: Grant execute permission and build
+      - name: 3. 开始编译
         run: |
-          # 确保脚本换行符正确
+          # 修复换行符问题
           sed -i 's/\r$//' gradlew
+          # 赋予执行权限
           chmod +x gradlew
+          # 👇 核心修复3：YunOS 项目必须用这个命令才能生成 APK！
           ./gradlew assembleDebug
 
-      # 4. 上传 APK (升级到 v4)
-      - name: Upload APK
+      # 4. 上传成品
+      - name: 4. 上传 APK
         uses: actions/upload-artifact@v4
         with:
-          name: CarLife-YunOS-APK
+          # 上传后的文件名
+          name: CarLife-YunOS-安装包
+          # 👇 核心修复4：YunOS 的输出路径是这个，别写错了！
           path: app/build/outputs/apk/debug/*.apk
