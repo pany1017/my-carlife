@@ -1,9 +1,5 @@
 name: 构建车机APK
 
-# 开启详细日志，方便排查问题
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE20: false
-
 on:
   push:
     branches: [ main ]
@@ -13,11 +9,11 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      # 1. 拉取代码 (必须全量拉取，防止漏掉 gradlew)
+      # 1. 拉取代码（全量，防止漏掉 gradlew）
       - name: 1. 获取源码
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 
+          fetch-depth: 0
 
       # 2. 设置 JDK 11
       - name: 2. 设置 Java 11
@@ -26,41 +22,54 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
 
-      # 3. 终极编译脚本
+      # 3. 编译（终极容错版）
       - name: 3. 开始编译
         run: |
-          echo "=== 开始执行编译 ==="
-          
-          # 【关键一步】强制进入项目根目录
-          cd CarLifeLauncherYunOS
-          
-          echo "📂 当前工作目录：$(pwd)"
-          echo "🔍 检查文件列表："
-          ls -la
+          set -e
+          echo "=== 开始编译 ==="
 
-          # 检查 gradlew 是否存在，如果不存在尝试从 app 目录找
+          # 【包容点1】强制进入项目根目录
+          cd CarLifeLauncherYunOS
+
+          # 【包容点2】确认 gradlew 存在
           if [ ! -f "gradlew" ]; then
-            echo "⚠️ 警告：未在当前目录找到 gradlew，尝试进入 app 目录..."
-            cd app
+            echo "❌ 致命：gradlew 不存在！"
             ls -la
+            exit 1
           fi
 
-          # 暴力修复换行符 (Windows 文件上传必做)
-          echo "🔧 修复换行符..."
+          # 【包容点3】修复 Windows 上传导致的换行符 CRLF 问题
           sed -i 's/\r$//' gradlew
-          
-          # 强行赋予执行权限
-          echo "🔑 赋予执行权限..."
+
+          # 【包容点4】强制赋予执行权限
           chmod +x gradlew
-          
+
+          # 【包容点5】锁定 Gradle 版本，防止 wrapper 下载错版本
+          echo "🔍 当前 Gradle 版本配置："
+          grep "distributionUrl" gradle/wrapper/gradle-wrapper.properties
+
+          # 【包容点6】国内镜像加速（解决依赖下载超时）
+          mkdir -p ~/.gradle
+          cat > ~/.gradle/init.gradle <<'EOF'
+          allprojects {
+            repositories {
+              maven { url 'https://maven.aliyun.com/repository/public/' }
+              maven { url 'https://maven.aliyun.com/repository/google/' }
+              maven { url 'https://maven.aliyun.com/repository/gradle-plugin/' }
+              google()
+              mavenCentral()
+            }
+          }
+          EOF
+
           # 开始构建
           echo "🚀 开始构建 APK..."
-          ./gradlew assembleDebug --stacktrace
+          ./gradlew assembleDebug --stacktrace --info
 
-      # 4. 上传生成的 APK
+      # 4. 上传 APK
       - name: 4. 上传 APK
+        if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: CarLife-YunOS-安装包
-          # 根据目录结构，apk 应该在 app/build/outputs/apk/debug/ 下
+          name: CarLife-YunOS-APK
           path: CarLifeLauncherYunOS/app/build/outputs/apk/debug/*.apk
