@@ -1,5 +1,9 @@
 name: 构建车机APK
 
+# 强制兼容模式
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE20: false
+
 on:
   push:
     branches: [ main ]
@@ -20,26 +24,20 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
 
-      # 3. 强制编译（终极版）
-      - name: 3. 强制编译
+      # 3. 编译 (直接调用 bash，避免权限问题)
+      - name: 3. 开始编译
         run: |
-          echo "=== 开始终极修复 ==="
+          echo "--- 开始执行编译 ---"
           
-          # 1. 强制切换到项目根目录
-          cd CarLifeLauncherYunOS || exit 1
-          
-          # 2. 暴力修复换行符（针对 Windows 上传的文件）
+          # 修复换行符
           sed -i 's/\r$//' gradlew
           
-          # 3. 强行赋予所有权限
-          chmod +x gradlew
-          
-          # 4. 直接执行构建
-          ./gradlew assembleDebug --stacktrace
+          # 直接通过 bash 运行，不需要 chmod +x
+          bash gradlew assembleDebug
 
       # 4. 上传 APK
       - name: 4. 上传 APK
         uses: actions/upload-artifact@v4
         with:
           name: CarLife-YunOS-安装包
-          path: CarLifeLauncherYunOS/app/build/outputs/apk/debug/*.apk
+          path: app/build/outputs/apk/debug/*.apk
