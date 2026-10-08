@@ -66,4 +66,10 @@ jobs:
       # 4. 兜底上传 (如果上面脚本意外失败，这个作为保底)
       - name: 4. 标准上传构件
         if: success() || failure() # 无论成功失败都尝试上传日志和可能存在的文件
-        uses: actions/upload-
+        uses: actions/upload-artifact@v4
+        with:
+          name: Build-Debug-Info
+          path: |
+            CarLifeLauncherYunOS/app/build/outputs/apk/debug/*.apk
+            output.apk
+            **/build.log
