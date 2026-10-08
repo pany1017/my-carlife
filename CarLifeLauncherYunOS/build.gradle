@@ -1,29 +1,26 @@
 buildscript {
     repositories {
-        // 1. 优先使用阿里云镜像下载插件
-        maven { url 'https://maven.aliyun.com/repository/google' }
-        maven { url 'https://maven.aliyun.com/repository/public' }
-        maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
+        // 1. 添加阿里云镜像 (最快)
+        maven { url 'https://maven.aliyun.com/repository/public/' }
+        maven { url 'https://maven.aliyun.com/repository/google/' }
         
-        // 2. 如果镜像没有，再走官方源（兜底）
+        // 2. 保留原来的 google() 和 mavenCentral()
         google()
         mavenCentral()
-        jcenter() // 建议保留，有些老项目需要，虽然已停用但不影响编译
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.4' // 保持你原有的版本
+        classpath 'com.android.tools.build:gradle:7.0.0' // 你的版本号可能不同
     }
 }
 
+// 项目依赖
 allprojects {
     repositories {
-        // 1. 优先使用阿里云镜像下载项目依赖
-        maven { url 'https://maven.aliyun.com/repository/google' }
-        maven { url 'https://maven.aliyun.com/repository/public' }
+        // 1. 同样添加阿里云镜像
+        maven { url 'https://maven.aliyun.com/repository/public/' }
+        maven { url 'https://maven.aliyun.com/repository/google/' }
         
-        // 2. 兜底
         google()
         mavenCentral()
-        jcenter()
     }
 }
