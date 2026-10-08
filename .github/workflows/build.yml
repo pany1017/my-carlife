@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      # 1. 拉取代码（全量，防止漏掉 gradlew）
+      # 1. 拉取代码
       - name: 1. 获取源码
         uses: actions/checkout@v4
         with:
@@ -22,54 +22,48 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
 
-      # 3. 编译（终极容错版）
-      - name: 3. 开始编译
+      # 3. 编译与强力搜索
+      - name: 3. 强力搜索并上传 APK
         run: |
           set -e
-          echo "=== 开始编译 ==="
+          echo "=== 开始执行打包与搜索 ==="
 
-          # 【包容点1】强制进入项目根目录
+          # 进入项目目录
           cd CarLifeLauncherYunOS
 
-          # 【包容点2】确认 gradlew 存在
-          if [ ! -f "gradlew" ]; then
-            echo "❌ 致命：gradlew 不存在！"
-            ls -la
-            exit 1
-          fi
-
-          # 【包容点3】修复 Windows 上传导致的换行符 CRLF 问题
+          # 修复换行符和权限
           sed -i 's/\r$//' gradlew
-
-          # 【包容点4】强制赋予执行权限
           chmod +x gradlew
 
-          # 【包容点5】锁定 Gradle 版本，防止 wrapper 下载错版本
-          echo "🔍 当前 Gradle 版本配置："
-          grep "distributionUrl" gradle/wrapper/gradle-wrapper.properties
-
-          # 【包容点6】国内镜像加速（解决依赖下载超时）
-          mkdir -p ~/.gradle
-          cat > ~/.gradle/init.gradle <<'EOF'
-          allprojects {
-            repositories {
-              maven { url 'https://maven.aliyun.com/repository/public/' }
-              maven { url 'https://maven.aliyun.com/repository/google/' }
-              maven { url 'https://maven.aliyun.com/repository/gradle-plugin/' }
-              google()
-              mavenCentral()
-            }
-          }
-          EOF
-
           # 开始构建
-          echo "🚀 开始构建 APK..."
-          ./gradlew assembleDebug --stacktrace --info
+          echo "🚀 开始构建..."
+          ./gradlew assembleDebug --stacktrace
 
-      # 4. 上传 APK
-      - name: 4. 上传 APK
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: CarLife-YunOS-APK
-          path: CarLifeLauncherYunOS/app/build/outputs/apk/debug/*.apk
+          echo "🔍 构建结束，开始地毯式搜索 APK 文件..."
+          
+          # 在整个项目目录下搜索任何后缀为 .apk 的文件
+          APK_PATH=$(find . -name "*.apk" -type f | head -1)
+
+          if [ -z "$APK_PATH" ]; then
+            echo "❌❌❌ 严重错误：整个服务器里都没找到 APK 文件！"
+            echo "💡 可能原因：Gradle 构建虽然没报错，但没生成包（比如被 Lint 拦截了）。"
+            echo "正在列出构建输出目录的内容供你排查："
+            ls -R app/build/outputs/ || echo "连 outputs 目录都没生成！"
+            exit 1
+          else
+            echo "✅✅✅ 成功捕获到 APK！"
+            echo "📂 文件绝对路径：$PWD/$APK_PATH"
+            
+            # 创建一个软链接到根目录，确保上传组件能找到它
+            ln -sf "$PWD/$APK_PATH" ./output.apk
+            
+            echo "🚀 准备上传该文件..."
+            gh release upload v0.1 ./output.apk --clobber || echo "⚠️ 上传过程有警告，请查看上方日志"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # 4. 兜底上传 (如果上面脚本意外失败，这个作为保底)
+      - name: 4. 标准上传构件
+        if: success() || failure() # 无论成功失败都尝试上传日志和可能存在的文件
+        uses: actions/upload-
