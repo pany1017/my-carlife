@@ -36,7 +36,7 @@ jobs:
 
       # 4. 把编译好的 APK 发回给你
       - name: Upload APK
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: CarLife-YunOS-APK
           path: app/build/outputs/apk/debug/*.apk
