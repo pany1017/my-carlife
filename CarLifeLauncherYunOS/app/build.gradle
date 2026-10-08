@@ -1,0 +1,44 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 27
+    buildToolsVersion '27.0.3'
+
+    defaultConfig {
+        applicationId "com.example.carlauncher"
+        minSdkVersion 24          // Android 7.0 (YunOS 3.0.1 基于 8.1, 取 24 保兼容)
+        targetSdkVersion 27       // Android 8.1 Oreo (对齐 YunOS 3.0.1)
+        versionCode 101
+        versionName "1.0.1"
+
+        // 关键: 仅编 32 位 ARMv7, 你的车机 CPU 是 ARMv7 Processor rev 3
+        ndk {
+            abiFilters 'armeabi-v7a'
+        }
+
+        // 去除多余资源, 减小包体 (< 1MB)
+        resConfigs 'zh', 'en'
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    // 关键: 不依赖 androidx.appcompat / material / constraintlayout
+    // 仅用 Android 框架原生 API, 避免 YunOS 3.0.1 因 support 库版本冲突而 ClassNotFoundException
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+}

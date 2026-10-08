@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  斯柯达明锐 CarLife 启动器 - 主界面
+  适配: 9 英寸横屏, 约 1280x720, YunOS 3.0.1 (Android 8.1)
+  原则: 只用原生 View (TextView/Button/LinearLayout/ScrollView), 不依赖 AppCompat/Material/ConstraintLayout
+-->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0B1220"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:padding="40dp">
+
+        <!-- 车标 + 标题 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ŠKODA"
+            android:textSize="22sp"
+            android:textColor="#5B7FA6"
+            android:letterSpacing="0.3"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="明锐 CarLife 启动器"
+            android:textSize="38sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="适配 YunOS 3.0.1 · ARMv7 · 1280×720 横屏"
+            android:textSize="15sp"
+            android:textColor="#7A8AA0"
+            android:layout_marginBottom="40dp" />
+
+        <!-- 状态指示 -->
+        <TextView
+            android:id="@+id/tv_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="正在检测 CarLife..."
+            android:textSize="20sp"
+            android:textColor="#AAAAAA"
+            android:gravity="center"
+            android:padding="16dp"
+            android:background="#162033"
+            android:layout_marginBottom="32dp" />
+
+        <!-- 主按钮: 一键连接 -->
+        <Button
+            android:id="@+id/btn_connect"
+            android:layout_width="match_parent"
+            android:layout_height="140dp"
+            android:text="连接 CarLife"
+            android:textSize="34sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:background="@drawable/btn_primary"
+            android:layout_marginBottom="24dp" />
+
+        <!-- 辅助按钮行 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="2">
+
+            <Button
+                android:id="@+id/btn_retry"
+                android:layout_width="0dp"
+                android:layout_height="90dp"
+                android:layout_weight="1"
+                android:text="重新检测"
+                android:textSize="20sp"
+                android:textColor="#FFFFFF"
+                android:background="@drawable/btn_secondary"
+                android:layout_marginEnd="12dp" />
+
+            <Button
+                android:id="@+id/btn_settings"
+                android:layout_width="0dp"
+                android:layout_height="90dp"
+                android:layout_weight="1"
+                android:text="车机设置"
+                android:textSize="20sp"
+                android:textColor="#FFFFFF"
+                android:background="@drawable/btn_secondary"
+                android:layout_marginStart="12dp" />
+        </LinearLayout>
+
+        <!-- 使用说明 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="使用说明"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:layout_marginTop="40dp"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="1. U 盘格式化为 FAT32，拷入本 APK 与 CarLife 车机版 APK
+2. 车机开启: 设置→开发者选项→USB 调试 + 允许未知来源
+3. 先装 CarLife 车机版，再装本启动器
+4. 按 Home 键可设为默认桌面，通电即启动"
+            android:textSize="16sp"
+            android:textColor="#9AA8BC"
+            android:lineSpacingExtra="6dp" />
+
+    </LinearLayout>
+</ScrollView>

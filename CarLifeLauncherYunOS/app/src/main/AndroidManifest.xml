@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.carlauncher">
+
+    <!--
+        权限说明 (均为普通权限, 安装时自动授予, 无需运行时申请):
+        MODIFY_AUDIO_SETTINGS: 预设媒体音量至 2/3, 防止起步爆音
+        (不再声明 USB_PERMISSION / INTERNET / WRITE_EXTERNAL_STORAGE,
+         避免 YunOS 3.0.1 因权限组变更弹二次确认, 也减小包体)
+    -->
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+
+    <!--
+        ABI 限定: 仅支持 ARMv7 32 位 (你的车机 CPU: ARMv7 Processor rev 3 @ 1001MHz)
+        显式声明 supports-screens, 防止被识别为手机应用
+    -->
+    <supports-screens
+        android:anyDensity="true"
+        android:smallScreens="false"
+        android:normalScreens="false"
+        android:largeScreens="true"
+        android:xlargeScreens="true" />
+
+    <application
+        android:label="@string/app_name"
+        android:allowBackup="true"
+        android:hardwareAccelerated="true"
+        android:supportsRtl="false"
+        android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+
+        <!--
+            主入口 Activity
+            - LAUNCHER:   在应用列表显示图标
+            - HOME:       可作为默认桌面 (通电即启动)
+            - DEFAULT:    响应隐式 Intent
+            - landscape:  强制横屏 (9 英寸车机)
+            - singleTask: 避免多次实例化
+        -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:screenOrientation="landscape"
+            android:configChanges="orientation|screenSize|keyboardHidden|screenLayout"
+            android:windowSoftInputMode="stateAlwaysHidden">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+    </application>
+
+</manifest>
