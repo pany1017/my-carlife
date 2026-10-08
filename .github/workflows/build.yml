@@ -18,7 +18,15 @@ jobs:
         with:
           java-version: '11'
           distribution: 'temurin'
-
+# 1. 修复 Windows 换行符并赋予权限
+      - name: Fix gradlew and grant permission
+        run: |
+          sed -i 's/\r$//' gradlew
+          chmod +x gradlew
+          
+      # 2. 开始编译
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug
       # 3. 赋予 gradlew 权限并编译
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
