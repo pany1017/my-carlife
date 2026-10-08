@@ -1,8 +1,6 @@
 name: Build APK
 
-# 👇 确保 env 顶格写，前面没有任何空格
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE20: false
+# 👇 删除之前那个强制 Node 20 的变量，既然系统强制升级，我们就顺应它
 
 on:
   push:
@@ -13,11 +11,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. 拉取代码
+      # 1. 拉取代码 (升级到 v4)
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. 设置 JDK
+      # 2. 设置 JDK (升级到 v4)
       - name: Set up JDK 11
         uses: actions/setup-java@v4
         with:
@@ -27,11 +25,12 @@ jobs:
       # 3. 赋予权限并编译
       - name: Grant execute permission and build
         run: |
-          sed -i 's/:\\r$$//' gradlew
+          # 确保脚本换行符正确
+          sed -i 's/\r$//' gradlew
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      # 4. 上传 APK
+      # 4. 上传 APK (升级到 v4)
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
